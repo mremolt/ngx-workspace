@@ -1,0 +1,8 @@
+{
+  "extends": ["tslint-angular", "rxjs-tslint-rules"],
+  "rules": {
+    "directive-selector": [true, "attribute", "mr", "camelCase"],
+    "component-selector": [true, "element", "mr", "kebab-case"],
+    "import-blacklist": [true, "rxjs/Rx"]
+  }
+}
