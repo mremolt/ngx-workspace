@@ -6,8 +6,8 @@ import { Observable, OperatorFunction } from 'rxjs';
 import { distinctUntilChanged, share } from 'rxjs/operators';
 import { ContainerComponent } from './container-component.class';
 
-export class StoreComponent<S = any> extends ContainerComponent {
-  constructor(protected store: AppStore, protected cd: ChangeDetectorRef) {
+export class StoreComponent<S extends object = any> extends ContainerComponent {
+  constructor(protected store: AppStore<S>, protected cd: ChangeDetectorRef) {
     super();
   }
 

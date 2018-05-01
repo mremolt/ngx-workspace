@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy } from '@angular/compiler/src/core';
 import { Component, OnInit } from '@angular/core';
-import { StoreComponent } from '@mr/ngx-tools';
+import { StoreComponent, IApiAction, API_ACTION } from '@mr/ngx-tools';
 import { filter } from 'rxjs/operators';
 
 export const greetingSelector = (state: any): string => {
@@ -33,5 +33,18 @@ export class GreetingComponent extends StoreComponent implements OnInit {
     setTimeout(() => {
       this.dispatch({ type: 'GREET_WHO', payload: 'Everybody' });
     }, 3000);
+
+    const action: IApiAction = {
+      type: API_ACTION,
+      payload: {
+        request: {
+          method: 'GET',
+          url: 'users',
+        },
+        handlers: 'USERS_FETCH',
+      },
+    };
+
+    this.dispatch(action);
   }
 }

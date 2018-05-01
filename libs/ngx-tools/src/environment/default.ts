@@ -1,5 +1,6 @@
 import { InjectionToken } from '@angular/core';
 import { IEnvironment } from './interfaces';
+import { uuidMiddleware } from '@mr/redux-tools';
 
 export const defaultSettings: IEnvironment = {
   production: false,
@@ -10,7 +11,7 @@ export const defaultSettings: IEnvironment = {
   pageTitle: 'MR Default App',
   base: '/',
   additionalSettings: {},
-  additionalMiddleware: [],
+  additionalMiddleware: [uuidMiddleware],
   additionalEnhancers: [],
 };
 

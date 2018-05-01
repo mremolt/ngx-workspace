@@ -1,7 +1,8 @@
 {
   "extends": "../../tsconfig.json",
-  "compilerOptions": {},
-  "angularCompilerOptions": {
-    "enableIvy": false
-  }
+  "compilerOptions": {
+    "module": "esnext",
+    "esModuleInterop": true
+  },
+  "angularCompilerOptions": {}
 }

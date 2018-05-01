@@ -12,5 +12,5 @@ exports.libPath = (libName, ...dirNames) => root('libs', libName, ...dirNames);
 exports.distPath = name => root('dist', name);
 exports.reportsPath = name => root('reports', name);
 exports.libs = () => glob.sync(`${root()}/libs/*`);
-exports.appRelative = (appName, ...dirNames) => path.join('apps', appName, ...dirNames);
-exports.libsRelative = () => glob.sync('libs/*');
+exports.appRelative = (appName, ...dirNames) => path.join('.', 'apps', appName, ...dirNames);
+exports.libsRelative = () => glob.sync('./libs/*');

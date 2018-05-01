@@ -4,7 +4,11 @@ import { createLogger, diffPredicateBlacklist, invariantMiddleware } from '@mr/r
 export const settings: IEnvironment = {
   ...defaultSettings,
 
-  apiUrl: '//localhost:3001',
+  apiUrl: '//jsonplaceholder.typicode.com',
   pageTitle: 'MR Default App (development)',
-  additionalMiddleware: [invariantMiddleware, createLogger({ diffPredicate: diffPredicateBlacklist(['GREET_WHO']) })],
+  additionalMiddleware: [
+    ...defaultSettings.additionalMiddleware,
+    invariantMiddleware,
+    createLogger({ diffPredicate: diffPredicateBlacklist(['GREET_WHO']) }),
+  ],
 };

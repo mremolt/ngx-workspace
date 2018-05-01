@@ -15,6 +15,8 @@ const {
 } = require('webpack');
 const { AngularCompilerPlugin } = require('@ngtools/webpack');
 
+const pathMapping = require('rxjs/_esm5/path-mapping');
+
 const { rootPath, appPath, distPath, libPath, libs, APP_NAME, appRelative, libsRelative } = require('./helpers');
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -44,9 +46,9 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js', '.json'],
     // mainFields: ['esm5', 'module', 'main', 'browser'],
-    // alias: {
-    //   ...pathMapping(),
-    // },
+    alias: {
+      ...pathMapping(),
+    },
   },
 
   entry: {
@@ -95,13 +97,12 @@ module.exports = {
     }),
     new ProgressPlugin(),
 
-    new ContextReplacementPlugin(/\@angular(\\|\/)core(\\|\/)esm5/, path.join(__dirname, './client')),
+    // new ContextReplacementPlugin(/\@angular(\\|\/)core(\\|\/)esm5/, path.join(__dirname, './client')),
 
     new AngularCompilerPlugin({
       tsConfigPath: `${appRoot}/tsconfig.json`,
       entryModule: `${appRoot}/src/app/app.module#AppModule`,
       sourceMap: true,
-      compilerOptions: { module: 'esnext' },
     }),
 
     new EnvironmentPlugin({

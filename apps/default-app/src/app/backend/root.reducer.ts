@@ -1,21 +1,24 @@
-import { AnyAction, combineReducers, Reducer } from 'redux';
+import { combineReducers, Reducer } from 'redux';
+import storage from 'localforage';
+import { resetReducer } from '@mr/redux-tools';
+import { persistReducer } from 'redux-persist';
+import { greet } from './greet.reducer';
 
-const GREET_WORLD = 'GREET_WORLD';
-const GREET_WHO = 'GREET_WHO';
-
-const greet: Reducer<string> = (state: string = 'Unknown', action: AnyAction): string => {
-  switch (action.type) {
-    case GREET_WORLD:
-      return 'World';
-
-    case GREET_WHO:
-      return action.payload;
-
-    case 'GREET_UNIVERSE':
-      return 'Universe';
-  }
-
-  return state;
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: ['auth'],
 };
 
-export const rootReducer = combineReducers({ greet });
+export type IState = Readonly<{
+  greet: string;
+}>;
+
+export const rootReducer: Reducer<IState> = persistReducer(
+  persistConfig,
+  resetReducer(
+    combineReducers({
+      greet,
+    })
+  )
+);
