@@ -5,6 +5,17 @@ import { createEpicMiddleware, Epic } from 'redux-observable';
 import { APP_ENVIRONMENT } from '../environment/default';
 import { IEnvironment } from '../environment/interfaces';
 import { HttpClient } from '@angular/common/http';
+import { Selector } from 'reselect';
+import { OperatorFunction, Observable, Subscriber } from 'rxjs';
+import { distinctUntilChanged, share } from 'rxjs/operators';
+
+export interface ISelectorMapping<S> {
+  [key: string]: Selector<S, any>;
+}
+
+export type IProps = Readonly<{
+  [key: string]: any;
+}>;
 
 @Injectable()
 export class AppStore<S extends object = object> {
@@ -48,5 +59,61 @@ export class AppStore<S extends object = object> {
 
   public subscribe(listener: () => void): Unsubscribe {
     return this.store.subscribe(listener);
+  }
+
+  public select<R>(
+    selector: Selector<S, R>,
+    operators: OperatorFunction<any, R>[] = [],
+    changeCallback?: (data: R) => void
+  ): Observable<R> {
+    return new Observable(subscriber => {
+      let currentValue = selector(this.store.getState());
+      subscriber.next(currentValue);
+
+      const subscription = this.store.subscribe(() => {
+        const nextValue = selector(this.store.getState());
+        if (currentValue !== nextValue) {
+          subscriber.next(nextValue);
+          currentValue = nextValue;
+
+          if (changeCallback) {
+            changeCallback(nextValue);
+          }
+        }
+      });
+
+      subscriber.add(subscription);
+    })
+      .pipe(...operators)
+      .pipe(distinctUntilChanged(), share());
+  }
+
+  public selectMulti(
+    selectors: ISelectorMapping<S>,
+    changeCallback?: (data: { [key: string]: any }) => void
+  ): Observable<{ [key: string]: Readonly<any> }> {
+    const keys = Object.keys(selectors);
+
+    const processSelectors = (state: S, subscriber: Subscriber<any>): void => {
+      const nextValue: IProps = keys.reduce((values, key) => {
+        return { ...values, [key]: selectors[key](state) };
+      }, {});
+
+      subscriber.next(nextValue);
+
+      if (changeCallback) {
+        changeCallback(nextValue);
+      }
+    };
+
+    return new Observable(subscriber => {
+      processSelectors(this.store.getState(), subscriber);
+
+      const subscription = this.store.subscribe(() => {
+        processSelectors(this.store.getState(), subscriber);
+      });
+
+      subscriber.add(subscription);
+    }).pipe(share() as any);
   }
 }

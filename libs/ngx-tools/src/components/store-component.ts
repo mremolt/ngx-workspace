@@ -3,10 +3,18 @@ import { AppStore } from '@mr/ngx-tools';
 import { AnyAction } from 'redux';
 import { Selector } from 'reselect';
 import { Observable, OperatorFunction } from 'rxjs';
-import { distinctUntilChanged, share } from 'rxjs/operators';
+import { take } from 'rxjs/operators';
 import { ContainerComponent } from './container-component.class';
+import { ISelectorMapping, IProps } from '../services/app-store';
+import { flatEquals } from '../utils/flat-equals';
 
-export class StoreComponent<S extends object = any> extends ContainerComponent {
+export class StoreComponent<S extends object = any, P extends IProps = {}> extends ContainerComponent {
+  protected _props = {};
+
+  get props(): P {
+    return this._props as P;
+  }
+
   constructor(protected store: AppStore<S>, protected cd: ChangeDetectorRef) {
     super();
   }
@@ -24,25 +32,32 @@ export class StoreComponent<S extends object = any> extends ContainerComponent {
     operators: OperatorFunction<any, R>[] = [],
     notifyChange: boolean = true
   ): Observable<R> {
-    return new Observable(subscriber => {
-      let currentState = selector(this.store.getState());
-      subscriber.next(currentState);
-
-      const subscription = this.store.subscribe(() => {
-        const nextState = selector(this.store.getState());
-        if (currentState !== nextState) {
-          subscriber.next(nextState);
-          currentState = nextState;
-
-          if (notifyChange) {
-            this.cd.markForCheck();
-          }
-        }
+    if (notifyChange) {
+      return this.store.select(selector, operators, () => {
+        this.cd.markForCheck();
       });
+    } else {
+      return this.store.select(selector, operators);
+    }
+  }
 
-      subscriber.add(subscription);
-    })
-      .pipe(...operators)
-      .pipe(distinctUntilChanged(), share());
+  public dispatchIfNotLoaded(loaded$: Observable<boolean>, callback: () => AnyAction): void {
+    this.subscribeToObservable(loaded$.pipe(take(1)), loaded => {
+      if (!loaded) {
+        this.dispatch(callback());
+      }
+    });
+  }
+
+  public mapStateToProps(selectors: ISelectorMapping<S>) {
+    let currentValue: any;
+
+    this.subscribeToObservable(this.store.selectMulti(selectors), data => {
+      if (!flatEquals(data, currentValue)) {
+        this._props = data;
+        currentValue = data;
+        this.cd.markForCheck();
+      }
+    });
   }
 }

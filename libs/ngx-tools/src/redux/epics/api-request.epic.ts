@@ -4,8 +4,7 @@ import { normalize } from 'normalizr';
 import { CurriedFunction2, curry } from 'ramda';
 import { AnyAction } from 'redux';
 import { ofType } from 'redux-observable';
-import { Observable } from 'rxjs';
-import { of, concat, never } from 'rxjs';
+import { Observable, NEVER, of, concat } from 'rxjs';
 import { catchError, map, mergeMap, takeUntil } from 'rxjs/operators';
 import { IEnvironment } from '../../environment/interfaces';
 import { IApiAction, IApiActionHandlers } from '../interfaces';
@@ -86,7 +85,7 @@ export function apiRequestEpic<S>(
             map(normalizeData(action)),
             map(handlers.success),
             catchError(error => of(handlers.error(error))),
-            takeUntil(action.payload.cancel || never())
+            takeUntil(action.payload.cancel || NEVER)
           ),
         of(handlers.complete())
       );
